@@ -1,5 +1,6 @@
 /**
  * Fichier d'initialisation de la plateforme
+ * Old version, keep for inspiration
  */
 
 (function(){
@@ -362,4 +363,5 @@
 	
 	
 	
-})();
+})//()
+;
