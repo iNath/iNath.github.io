@@ -1,8 +1,7 @@
-Partition = 
+Partition = [
 	// Une ligne par entrée
 	// must be ordered
 	[
-		{delay: 100},
 		{delay: 1000},
 		{delay: 1500},
 		{delay: 2200},
@@ -19,4 +18,4 @@ Partition =
 		{delay: 7100},
 		{delay: 8300}
 	]
-;
+];
