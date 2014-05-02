@@ -38,10 +38,11 @@ Game.prototype.start = function(){
 		}
 	};
 	var ligneChangeHandler = function(i, isActive){
-		marqueursManager.upLine(i);			
+					
 		if(isActive){
 			lignes[i].activate();
 		} else {
+			marqueursManager.upLine(i);
 			lignes[i].deactivate();
 		}
 		lignes[i].refresh();

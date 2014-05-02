@@ -1,193 +1,137 @@
-function Marqueur(){
+function Marqueur(x, delay, duration, id){
 	Shape.call(this);
-	
-	this.id = null;
-	
-	this.delay = null;
-	this.duration = null;
-	this.x = null;
-	this.y = null;
-	this.state = null;
-	this.context = null;
-	
-	this.timeDown = 0;
-	
-	this.state = Marqueur.STATE_INIT;
-}
-Marqueur.prototype = Object.create(Shape.prototype);
-Marqueur.prototype.constructor = Marqueur;
-
-Marqueur.STATE_INIT = 000;
-Marqueur.STATE_LOADED = 100;
-Marqueur.STATE_DOWN = 200;
-Marqueur.STATE_ACTIVE = 300;
-Marqueur.STATE_FAIL = 400;
-Marqueur.STATE_ENDING = 500;
-Marqueur.STATE_ENDED = 600;
-
-
-Marqueur.prototype._toState = function(state){
-	var authorized = false;
-	switch(state){
-		case Marqueur.STATE_LOADED:
-			if(-1 != [Marqueur.STATE_INIT].indexOf(this.state))
-				authorized = true;
-			break;
-		case Marqueur.STATE_ACTIVE:
-			if(-1 != [Marqueur.STATE_LOADED].indexOf(this.state))
-				authorized = true;
-			break;
-		case Marqueur.STATE_FAIL:
-			if(-1 != [Marqueur.STATE_LOADED, Marqueur.STATE_ACTIVE].indexOf(this.state))
-				authorized = true;
-			break;
-		case Marqueur.STATE_ENDING:
-			if(-1 != [Marqueur.STATE_LOADED, Marqueur.STATE_ACTIVE, Marqueur.STATE_FAIL].indexOf(this.state))
-				authorized = true;
-			break;
-		case Marqueur.STATE_ENDED:
-			if(-1 != [Marqueur.STATE_ENDING].indexOf(this.state))
-				authorized = true;
-			break;
-		default: throw new Error('Unknown state');
-	}	
-	if(authorized) this.state = state;
-	return authorized;
-};
-
-Marqueur.prototype._statetoState = function(from, state){
-	if(from != this.state) return false;
-	
-	var authorized = false;
-	switch(state){
-		case Marqueur.STATE_LOADED:
-			if(-1 != [Marqueur.STATE_INIT].indexOf(this.state))
-				authorized = true;
-			this._InitToLoaded();
-			break;
-		case Marqueur.STATE_ACTIVE:
-			if(-1 != [Marqueur.STATE_LOADED].indexOf(this.state))
-				authorized = true;
-			this._LoadedToActive();
-			break;
-		case Marqueur.STATE_FAIL:
-			if(-1 != [Marqueur.STATE_LOADED, Marqueur.STATE_ACTIVE].indexOf(this.state))
-				authorized = true;
-			if(this.state == Marqueur.STATE_LOADED) this._LoadedToFail();
-			if(this.state == Marqueur.STATE_FAIL) this._FailToFail();
-			break;
-		case Marqueur.STATE_ENDING:
-			if(-1 != [Marqueur.STATE_LOADED, Marqueur.STATE_ACTIVE, Marqueur.STATE_FAIL].indexOf(this.state))
-				authorized = true;
-			if(this.state == Marqueur.STATE_LOADED) this._LoadedToEnding();
-			if(this.state == Marqueur.STATE_ACTIVE) this._ActiveToEnding();
-			if(this.state == Marqueur.STATE_FAIL) this._FailToEnding();
-			break;
-		case Marqueur.STATE_ENDED:
-			if(-1 != [Marqueur.STATE_ENDING].indexOf(this.state))
-				authorized = true;
-			this._EndingToEnded();
-			break;
-		default: throw new Error('Unknown state');
-	}	
-	if(authorized) this.state = state;
-	return authorized;
-};
-
-Marqueur.prototype._LoadedtoActive = function(){
-	if(!this._toState(Marqueur.STATE_ACTIVE)) return;
-	
-	if(this.duration == 0) return;
-	
-	// Prepare next step
-	window.setTimeout((this._timeout).bind(this), this.duration);
-};
-
-
-
-Marqueur.prototype.load = function(x, y, delay, duration, id){
-	// Check if we are in a right state
-	if(!this._toState(Marqueur.STATE_LOADED)) return;
 	
 	// Load canvas
 	this._createCanvas(200);
 	this.id = id;
 	this.x = x;
-	this.setY(y);
+	this.y = -100;
 	this.delay = delay;
 	this.duration = duration;
-};
-
-Marqueur.prototype.down = function(timeDown){
-		
-	console.log("Down marqueur, delay: "+this.delay+", duration:" + this.duration);
 	
-	if(!this._statetoState(Marqueur.STATE_LOADED, Marqueur.STATE_ACTIVE)) return;
-	if(!this._statetoState(Marqueur.STATE_LOADED, Marqueur.STATE_ENDING)) return;
-	if(!this._statetoState(Marqueur.STATE_LOADED, Marqueur.STATE_FAIL)) return;
+	this.timeDown = 0;
 	
-};
+	this.state = Marqueur.STATE_INACTIVE;
+}
+Marqueur.prototype = Object.create(Shape.prototype);
+Marqueur.prototype.constructor = Marqueur;
 
-Marqueur.prototype.up = function(){
-	if(!this._toState(Marqueur.STATE_FAIL)) return;
-	
-	console.log("Up marqueur, delay: "+this.delay+", duration:" + this.duration);
-};
+Marqueur.STATE_INACTIVE = 000;
+Marqueur.STATE_ACTIVE = 100;
+Marqueur.STATE_FAIL = 200;
+Marqueur.STATE_SUCCESS = 210;
+Marqueur.STATE_ENDED = 300;
 
-Marqueur.prototype.fail = function(){
-	if(!this._toState(Marqueur.STATE_FAIL)) return;
-		
-	window.setTimeout((this._failTimeout).bind(this), 500);
-};
+Marqueur.EVENT_DOWN = "DOWN";
+Marqueur.EVENT_UP = "UP";
+Marqueur.EVENT_SUCCESS = "SUCCESS";
+Marqueur.EVENT_FAIL = "FAIL";
+Marqueur.EVENT_TIMEOUT = "TIMEOUT";
 
-Marqueur.prototype._activeTimeout = function(){
-	if(!this._toState(Marqueur.STATE_ENDING)) return;
-	
-};
-
-Marqueur.prototype._failTimeout = function(){
-	if(!this._toState(Marqueur.STATE_ENDING)) return;
-	
-};
-
-Marqueur.prototype._fail = function(){
-	if(!this._toState(Marqueur.STATE_FAIL)) return;
-	
-};
-
-Marqueur.prototype._end = function(){
-	if(-1 == [Marqueur.STATE_FAIL, Marqueur.STATE_DOWN, Marqueur.STATE_ACTIVE].indexOf(this.state)) return false;
-		
-	// change state
-	this.state = Marqueur.STATE_ENDING;
-	
-	if(this.duration > 0){
-		window.setTimeout((function(){
-			 
-			// when finished, end it
-			this.state = Marqueur.STATE_ENDED;
+Marqueur.TRANSITIONS = [
+	{
+		from: Marqueur.STATE_INACTIVE,
+		to: Marqueur.STATE_ACTIVE,
+		events: [Marqueur.EVENT_DOWN],
+		condition: function(){ 
+			return this.duration == 0; 
+		},
+		action: function(){ 
+			this._trigger(Marqueur.EVENT_SUCCESS); 
+		}
+	},
+	{
+		from: Marqueur.STATE_INACTIVE,
+		to: Marqueur.STATE_ACTIVE,
+		events: [Marqueur.EVENT_DOWN],
+		condition: function(){ return this.duration > 0; },
+		action: function(){ 
+			this.timeDown = Date.now();
+			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), this.duration); // post action, devrai être mutualisé
+		}
+	},{
+		from: Marqueur.STATE_INACTIVE,
+		to: Marqueur.STATE_FAIL,
+		events: [Marqueur.EVENT_FAIL],
+		condition: null,
+		action: function(){ 
+			window.setTimeout((function(){ 
+				this._trigger(Marqueur.EVENT_TIMEOUT);
+			}).bind(this), 500); // le temps d'une eventuelle animation, post action
+		}
+	},{
+		from: Marqueur.STATE_ACTIVE,
+		to: Marqueur.STATE_SUCCESS,
+		events: [Marqueur.EVENT_SUCCESS],
+		condition: null,
+		action: function(){ 
+			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
+		}
+	},{
+		from: Marqueur.STATE_ACTIVE,
+		to: Marqueur.STATE_FAIL,
+		events: [Marqueur.EVENT_UP],
+		condition: null,
+		action: function(){ 
+			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
+		}
+	},{
+		from: Marqueur.STATE_SUCCESS,
+		to: Marqueur.STATE_ENDED,
+		events: [Marqueur.EVENT_TIMEOUT],
+		condition: null,
+		action: function(){
 			this._draw();
-				
-			// TODO: supprimer les éléments du dom
-		}).bind(this), 500);
-	} else {
-		this.state = Marqueur.STATE_ENDED;	
-		this._draw();
+		}
+	},{
+		from: Marqueur.STATE_FAIL,
+		to: Marqueur.STATE_ENDED,
+		events: [Marqueur.EVENT_TIMEOUT],
+		condition: null,
+		action: function(){
+			this._draw();
+		}
 	}
+];
+
+Marqueur.prototype._trigger = function(event){
+	var tr = Marqueur.TRANSITIONS;
+	for(var i=0;i<tr.length;i++){
+		if(-1 != tr[i].events.indexOf(event) 
+		&& tr[i].from == this.state
+		&& (!tr[i].condition || (tr[i].condition.bind(this))()) 
+		){
+			this.state = tr[i].to;
+			if(tr[i].action) (tr[i].action.bind(this))();
+			return true;
+		}
+	}
+	return false;
+};
+
+
+// Evenement externes
+Marqueur.prototype.down = function(timeDown){
+	console.log('Down');
+	if(this._trigger(Marqueur.EVENT_DOWN)){
+		console.log('Touched');
+		this.timeDown = timeDown;
+	}
+};
+Marqueur.prototype.up = function(){
+	this._trigger(Marqueur.EVENT_UP);
+};
+Marqueur.prototype.fail = function(){
+	this._trigger(Marqueur.EVENT_FAIL);
 };
 
 Marqueur.prototype.refresh = function(){
 	
 	//this._computeScore();
 	
-	switch(this.state){
-		case Marqueur.STATE_INIT: return false;	
-		case Marqueur.STATE_LOADED: case Marqueur.STATE_DOWN: case Marqueur.STATE_ACTIVE: 
-		case Marqueur.STATE_FAIL: case Marqueur.STATE_ENDING: case Marqueur.STATE_ENDED:
-			this._draw();
-			break;
-		default: throw new Error('Wrong state');
-	}
+	console.log("Event: " + this.state);
+	
+	this._draw();
 };
 
 Marqueur.prototype.setY = function(y){
@@ -203,11 +147,10 @@ Marqueur.prototype.isEnded = function(){
 };
 
 Marqueur.prototype._draw = function(){
-	if(-1 == [Marqueur.STATE_ENDED, Marqueur.STATE_ENDING, Marqueur.STATE_FAIL, Marqueur.STATE_ACTIVE, Marqueur.STATE_DOWN, Marqueur.STATE_LOADED].indexOf(this.state)) return false;
-		
+	
 	this.context.clearRect(0,0,Configuration.width, Configuration.height);
 		
-	if(-1 != [Marqueur.STATE_END, Marqueur.STATE_ENDING].indexOf(this.state)) return;
+	if(Marqueur.STATE_ENDED == this.state) return;
 		
 	var style = Configuration.getStyleMarqueurForLigne(this.id);
 

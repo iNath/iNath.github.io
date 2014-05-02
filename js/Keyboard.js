@@ -5,23 +5,25 @@ function Keyboard(){
 	
 	Configuration.getWrapper().addEventListener("keydown", (function(evt){
 		
-		// If already
-		if(this.keyIsActive([Keyboard.VALIDATE])) return;
 		
 		switch(evt.keyCode){
 			case Keyboard._ENTER: 
+				if(this.keyIsActive([Keyboard.VALIDATE])) return;
 				this.states[Keyboard.VALIDATE] = true;
 				this._fire(Keyboard.VALIDATE);
 				break;
 			case Keyboard._NUM_1: 
+				if(this.keyIsActive([Keyboard.NUM_1])) return;
 				this.states[Keyboard.NUM_1] = true;
 				this._fire(Keyboard.NUM_1);
 				break;
 			case Keyboard._NUM_2: 
+				if(this.keyIsActive([Keyboard.NUM_2])) return;
 				this.states[Keyboard.NUM_2] = true;
 				this._fire(Keyboard.NUM_2);
 				break;
 			case Keyboard._NUM_3:  
+				if(this.keyIsActive([Keyboard.NUM_3])) return;
 				this.states[Keyboard.NUM_3] = true;
 				this._fire(Keyboard.NUM_3);
 				break;

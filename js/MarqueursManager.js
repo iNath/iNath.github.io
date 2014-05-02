@@ -47,7 +47,7 @@ MarqueursManager.prototype.downLine = function(ligne){
 	for(var i=0;i<this.lignes[ligne].length;i++){
 		if(this.isInReachableArea(this.lignes[ligne][i].getDelay())){
 			this.lignes[ligne][i].down(this.timeReference);
-			//break;
+			break;
 		}
 	}
 };
@@ -55,10 +55,7 @@ MarqueursManager.prototype.downLine = function(ligne){
 MarqueursManager.prototype.upLine = function(ligne){
 	console.log('up ligne ' + ligne);
 	for(var i=0;i<this.lignes[ligne].length;i++){
-		//if(this.isInFailArea(this.lignes[ligne][i].getDelay())){
-			this.lignes[ligne][i].up();
-			//break;
-		//}
+		this.lignes[ligne][i].up();
 	}
 };
 
@@ -116,8 +113,7 @@ MarqueursManager.prototype.reload = function(){
 	for(var i=0;i<this.partition.length;i++){
 		for(var j=0;j<this.partition[i].length;j++){
 			if(this.isInLoadedArea(this.partition[i][j].delay)){
-				marqueur = new Marqueur();
-				marqueur.load(this.getXPosition(i), -100, this.partition[i][j].delay, 0, i);
+				marqueur = new Marqueur(this.getXPosition(i), this.partition[i][j].delay, 1000, i);
 				this.lignes[i].push(marqueur);
 				this.partition[i].splice(j,1);
 				j--;

@@ -2,7 +2,7 @@
 	
 Configuration = {
 	width: 300,
-	height: 400,
+	height: 300,
 	velocity: 200, // px/sec
 	getWrapper: function(){ return document.body; },
 	getStyleMarqueurForLigne : function(i){
@@ -23,7 +23,7 @@ Configuration = {
 		return {
 			reachable: { // Zone de touche
 				height: 40,
-				y: 340
+				y: 240
 			}
 		};
 	}
