@@ -4,12 +4,13 @@ Configuration = {
 	width: 300,
 	height: 300,
 	velocity: 200, // px/sec
-	getWrapper: function(){ return document.body; },
+	getWrapper: function(){ return document.getElementById('game'); },
 	getStyleMarqueurForLigne : function(i){
 		return {
 			width: 24,
+			height: 10,
 			offsetLeft: -12,
-			offsetTop: -12,
+			offsetTop: -5,
 			color: '#'+(i==0?'ee':'55')+(i==1?'ff':'33')+(i==2?'aa':'33'),
 		};
 	},

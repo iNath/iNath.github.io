@@ -1,6 +1,7 @@
-function MarqueursManager(partition){
+function MarqueursManager(partition, scoreManager){
 	this.lignes = [];
 	this.partition = partition;
+	this.scoreManager = scoreManager;
 	
 	var configuration = Configuration.getAreaPositions().reachable;
 	
@@ -46,6 +47,7 @@ MarqueursManager.prototype.downLine = function(ligne){
 	console.log('down ligne ' + ligne);
 	for(var i=0;i<this.lignes[ligne].length;i++){
 		if(this.isInReachableArea(this.lignes[ligne][i].getDelay())){
+			console.log('Down at ---> timeReference: ' +this.timeReference);
 			this.lignes[ligne][i].down(this.timeReference);
 			break;
 		}
@@ -55,7 +57,7 @@ MarqueursManager.prototype.downLine = function(ligne){
 MarqueursManager.prototype.upLine = function(ligne){
 	console.log('up ligne ' + ligne);
 	for(var i=0;i<this.lignes[ligne].length;i++){
-		this.lignes[ligne][i].up();
+		this.lignes[ligne][i].up(this.timeReference);
 	}
 };
 
@@ -65,6 +67,7 @@ MarqueursManager.prototype.refresh = function(){
 		for(var j=0;j<this.lignes[i].length;j++){
 			marqueur = this.lignes[i][j];
 			
+			
 			if(marqueur.isEnded()){
 				// End it
 				this.lignes[i].splice(j,1);
@@ -73,7 +76,7 @@ MarqueursManager.prototype.refresh = function(){
 			}
 			
 			marqueur.setY(this.getYPosition(marqueur.getDelay()));
-			marqueur.refresh();
+			marqueur.refresh(this.timeReference);
 			
 			if(this.isInFailArea(marqueur.getDelay())){
 				// Le marqueur est passé
@@ -113,7 +116,7 @@ MarqueursManager.prototype.reload = function(){
 	for(var i=0;i<this.partition.length;i++){
 		for(var j=0;j<this.partition[i].length;j++){
 			if(this.isInLoadedArea(this.partition[i][j].delay)){
-				marqueur = new Marqueur(this.getXPosition(i), this.partition[i][j].delay, 1000, i);
+				marqueur = new Marqueur(this.getXPosition(i), this.partition[i][j].delay, this.partition[i][j].duration, i, this.scoreManager);
 				this.lignes[i].push(marqueur);
 				this.partition[i].splice(j,1);
 				j--;

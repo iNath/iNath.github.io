@@ -1,4 +1,4 @@
-function Marqueur(x, delay, duration, id){
+function Marqueur(x, delay, duration, id, scoreManager){
 	Shape.call(this);
 	
 	// Load canvas
@@ -8,8 +8,13 @@ function Marqueur(x, delay, duration, id){
 	this.y = -100;
 	this.delay = delay;
 	this.duration = duration;
+	this.scoreManager = scoreManager;
 	
-	this.timeDown = 0;
+	this.delayDown = null;
+	this.delayEnd = null;
+	this.delayLastScoreUpdate = null;
+	
+	this.score = 0;
 	
 	this.state = Marqueur.STATE_INACTIVE;
 }
@@ -24,20 +29,24 @@ Marqueur.STATE_ENDED = 300;
 
 Marqueur.EVENT_DOWN = "DOWN";
 Marqueur.EVENT_UP = "UP";
-Marqueur.EVENT_SUCCESS = "SUCCESS";
+Marqueur.EVENT_SUCCESS = "SUCCESS"; // unused
 Marqueur.EVENT_FAIL = "FAIL";
 Marqueur.EVENT_TIMEOUT = "TIMEOUT";
 
 Marqueur.TRANSITIONS = [
 	{
 		from: Marqueur.STATE_INACTIVE,
-		to: Marqueur.STATE_ACTIVE,
+		to: Marqueur.STATE_SUCCESS,
 		events: [Marqueur.EVENT_DOWN],
 		condition: function(){ 
 			return this.duration == 0; 
 		},
-		action: function(){ 
-			this._trigger(Marqueur.EVENT_SUCCESS); 
+		action: function(event){
+			this.delayDown = event.delayDown;
+			this._enterScore();
+		},
+		postAction: function(){ 
+			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
 		}
 	},
 	{
@@ -45,16 +54,25 @@ Marqueur.TRANSITIONS = [
 		to: Marqueur.STATE_ACTIVE,
 		events: [Marqueur.EVENT_DOWN],
 		condition: function(){ return this.duration > 0; },
-		action: function(){ 
-			this.timeDown = Date.now();
-			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), this.duration); // post action, devrai être mutualisé
+		action: function(event){ 
+			this.delayDown = event.delayDown;
+			this.delayLastScoreUpdate = event.delayDown;
+			this._enterScore();
+		},	
+		postAction: function(){ 			
+			
+			window.setTimeout((function(){
+				this._trigger(Marqueur.EVENT_TIMEOUT, {delayEnd: this.delayDown + this.duration});
+			}).bind(this), this.duration); // post action, devrai être mutualisé
 		}
 	},{
 		from: Marqueur.STATE_INACTIVE,
 		to: Marqueur.STATE_FAIL,
 		events: [Marqueur.EVENT_FAIL],
 		condition: null,
-		action: function(){ 
+		action: null,
+		postAction: function(){
+			this.scoreManager.fail(); 
 			window.setTimeout((function(){ 
 				this._trigger(Marqueur.EVENT_TIMEOUT);
 			}).bind(this), 500); // le temps d'une eventuelle animation, post action
@@ -62,9 +80,12 @@ Marqueur.TRANSITIONS = [
 	},{
 		from: Marqueur.STATE_ACTIVE,
 		to: Marqueur.STATE_SUCCESS,
-		events: [Marqueur.EVENT_SUCCESS],
+		events: [Marqueur.EVENT_TIMEOUT],
 		condition: null,
-		action: function(){ 
+		action: function(event){
+			this.delayEnd = event.delayEnd;
+		},
+		postAction: function(){ 
 			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
 		}
 	},{
@@ -72,7 +93,11 @@ Marqueur.TRANSITIONS = [
 		to: Marqueur.STATE_FAIL,
 		events: [Marqueur.EVENT_UP],
 		condition: null,
-		action: function(){ 
+		action: function(event){
+			this.delayEnd = event.delayEnd;
+		},
+		postAction: function(){ 
+			this.scoreManager.fail();
 			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
 		}
 	},{
@@ -80,7 +105,8 @@ Marqueur.TRANSITIONS = [
 		to: Marqueur.STATE_ENDED,
 		events: [Marqueur.EVENT_TIMEOUT],
 		condition: null,
-		action: function(){
+		action: null,
+		postAction: function(){
 			this._draw();
 		}
 	},{
@@ -88,13 +114,14 @@ Marqueur.TRANSITIONS = [
 		to: Marqueur.STATE_ENDED,
 		events: [Marqueur.EVENT_TIMEOUT],
 		condition: null,
-		action: function(){
+		action: null,
+		postAction: function(){
 			this._draw();
 		}
 	}
 ];
 
-Marqueur.prototype._trigger = function(event){
+Marqueur.prototype._trigger = function(event, data){
 	var tr = Marqueur.TRANSITIONS;
 	for(var i=0;i<tr.length;i++){
 		if(-1 != tr[i].events.indexOf(event) 
@@ -102,7 +129,8 @@ Marqueur.prototype._trigger = function(event){
 		&& (!tr[i].condition || (tr[i].condition.bind(this))()) 
 		){
 			this.state = tr[i].to;
-			if(tr[i].action) (tr[i].action.bind(this))();
+			if(tr[i].action) (tr[i].action.bind(this))(data);
+			if(tr[i].postAction) (tr[i].postAction.bind(this))();
 			return true;
 		}
 	}
@@ -111,25 +139,19 @@ Marqueur.prototype._trigger = function(event){
 
 
 // Evenement externes
-Marqueur.prototype.down = function(timeDown){
-	console.log('Down');
-	if(this._trigger(Marqueur.EVENT_DOWN)){
-		console.log('Touched');
-		this.timeDown = timeDown;
-	}
+Marqueur.prototype.down = function(delayDown){
+	this._trigger(Marqueur.EVENT_DOWN, {delayDown: delayDown});
 };
-Marqueur.prototype.up = function(){
-	this._trigger(Marqueur.EVENT_UP);
+Marqueur.prototype.up = function(delayEnd){
+	this._trigger(Marqueur.EVENT_UP, {delayEnd: delayEnd});
 };
 Marqueur.prototype.fail = function(){
 	this._trigger(Marqueur.EVENT_FAIL);
 };
 
-Marqueur.prototype.refresh = function(){
+Marqueur.prototype.refresh = function(delayReference){
 	
-	//this._computeScore();
-	
-	console.log("Event: " + this.state);
+	this._refreshScore(delayReference);
 	
 	this._draw();
 };
@@ -154,18 +176,25 @@ Marqueur.prototype._draw = function(){
 		
 	var style = Configuration.getStyleMarqueurForLigne(this.id);
 
-	if(this.state == Marqueur.STATE_ACTIVE){
-		style.color = '#ffffff';
+	var color = style.color;
+	switch(this.state){
+		case Marqueur.STATE_ACTIVE:
+			color = '#ffffff';
+			break;
+		case Marqueur.STATE_SUCCESS:
+			color = '#00ff00';
+			break;
+		case Marqueur.STATE_FAIL:
+			color = '#000000';
+			break;
 	}
-	
-	var color = this.state == Marqueur.STATE_FAIL ? '#000000' : style.color;
 
 	if(this.duration > 0){
 		var hauteur = this.duration * Configuration.velocity / 1000;
 		this.context.fillStyle = color;
 		this.context.fillRect(
 			this.x-6,
-			this.y+style.offsetTop+style.width - hauteur,
+			this.y+style.offsetTop+style.height - hauteur,
 			12,
 			hauteur
 		);
@@ -176,15 +205,25 @@ Marqueur.prototype._draw = function(){
 
 };
 
-Marqueur.prototype._computeScore = function(){
-	if(-1 == [Marqueur.STATE_DOWN].indexOf(this.state)) return 0;
-		
-	var basicScore = Math.abs(this.timeDown - this.delay);
+Marqueur.prototype._enterScore = function(){
+	console.log('delayDown: ' + this.delayDown + ' delay: ' + this.delay);
+	var basicScore = (200/2) - Math.abs(this.delayDown - this.delay);
+	console.log('Score de base: ' + basicScore);
+	this.scoreManager.add(basicScore, false);
+};
+
+Marqueur.prototype._refreshScore = function(delayReference){
+	if(!this.delayDown) return;
+	if(this.duration == 0) return;
 	
-	if(this.duration > 0){
-		var timeElapsed = Date.now() - this.timeStartDown;
-		
-	}
+	var basicScore = (200/2) - Math.abs(this.delayDown - this.delay);
+	var delayToCompute = (this.delayEnd ? this.delayEnd : delayReference) - this.delayLastScoreUpdate;
+	if(delayToCompute <= 0) return;
+	 
+	var ratio = (delayToCompute / 100); // Une fois le score de base toutes les 100ms
+	this.scoreManager.add(basicScore * ratio, true);
+	this.delayLastScoreUpdate = delayReference;
+	
 };
 
 

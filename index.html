@@ -8,6 +8,7 @@
 	<script src="js/Configuration.js"></script>
 	<script src="js/Keyboard.js"></script>
 	<script src="js/Shape.js"></script>
+	<script src="js/ScoreManager.js"></script>
 	<script src="js/Background.js"></script>
 	<script src="js/Marqueur.js"></script>
 	<script src="js/MarqueursManager.js"></script>
@@ -19,7 +20,13 @@
 		};
 	</script>
 </head>
-<body style="text-align:center;">
-	
+<body>
+	<div id="game" style="position:relative;height:300px;width:300px;margin:10px auto;"> </div>
+	<div id="score" style="font-size:10em;text-align:center;">0</div>
+	<div id="skill" style="position:absolute;top:10px;left:10px;font-size:5em;"> </div>
+	<div id="combo" style="position:absolute;top:10px;right: 10px;font-size:5em;"> </div>
+	 <audio id="audio">
+		  <source src="resource/rocky.mp3" type="audio/mpeg">
+	</audio>
 </body>
 </html>

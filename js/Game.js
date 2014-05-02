@@ -4,11 +4,16 @@ function Game(){
 
 Game.prototype.start = function(){
 	
+	var score = new Score();
+	
 	var background = new Background();
 	background.refresh();
 	
-	var marqueursManager = new MarqueursManager(Partition);
+	
+	var marqueursManager = new MarqueursManager(Partition, score);
 	marqueursManager.start();
+	
+	document.getElementById('audio').play();
 	
 	var lignes = [];
 	for(var i=0;i<Partition.length;i++){	

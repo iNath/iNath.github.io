@@ -3,7 +3,7 @@ function Keyboard(){
 	this.states = {};
 	
 	
-	Configuration.getWrapper().addEventListener("keydown", (function(evt){
+	document.body.addEventListener("keydown", (function(evt){
 		
 		
 		switch(evt.keyCode){
@@ -30,7 +30,7 @@ function Keyboard(){
 			default: break;
 		}
 	}).bind(this));
-	Configuration.getWrapper().addEventListener("keyup", (function(evt){
+	document.body.addEventListener("keyup", (function(evt){
 		switch(evt.keyCode){
 			case Keyboard._ENTER: 
 				this.states[Keyboard.VALIDATE] = false;
