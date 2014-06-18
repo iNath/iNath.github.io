@@ -34,9 +34,12 @@ Game.prototype.start = function(){
 			if(keyboard.keyIsActive(Keyboard.NUM_2)){
 				marqueursManager.downLine(1);				
 			}
-			if(keyboard.keyIsActive(Keyboard.NUM_3)){
-				marqueursManager.downLine(2);				
-			}
+            if(keyboard.keyIsActive(Keyboard.NUM_3)){
+                marqueursManager.downLine(2);
+            }
+            if(keyboard.keyIsActive(Keyboard.NUM_4)){
+                marqueursManager.downLine(3);
+            }
 		} else { 
 			background.deactivate();
 			background.refresh();
@@ -59,9 +62,12 @@ Game.prototype.start = function(){
 	keyboard.addListener(Keyboard.NUM_2, function(){
 		ligneChangeHandler(1, keyboard.keyIsActive(Keyboard.NUM_2));
 	});
-	keyboard.addListener(Keyboard.NUM_3, function(){
-		ligneChangeHandler(2, keyboard.keyIsActive(Keyboard.NUM_3));
-	});
+    keyboard.addListener(Keyboard.NUM_3, function(){
+        ligneChangeHandler(2, keyboard.keyIsActive(Keyboard.NUM_3));
+    });
+    keyboard.addListener(Keyboard.NUM_4, function(){
+        ligneChangeHandler(3, keyboard.keyIsActive(Keyboard.NUM_4));
+    });
 	
 	/*
 	var marqueur = new Marqueur();
