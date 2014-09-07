@@ -1,5 +1,6 @@
 function Ligne(){
-	Shape.call(this);
+
+    this.context = null;
 
 	this.x = null;
 	this.y = null;
@@ -7,9 +8,7 @@ function Ligne(){
 	
 	this.state = Ligne.STATE_INIT;
 	
-};
-Ligne.prototype = Object.create(Shape.prototype);
-Ligne.prototype.constructor = Ligne;
+}
 
 Ligne.STATE_INIT = 000;
 Ligne.STATE_ACTIVE = 100;
@@ -19,7 +18,7 @@ Ligne.STATE_INACTIVE = 200;
 Ligne.prototype.load = function(x, id){
 	if(this.state != Ligne.STATE_INIT) return false;
 	
-	this._createCanvas(100);
+	this.context = Shape.createCanvas(100);
 	this.id = id;
 	this.x = x;
 	this.y = 0;

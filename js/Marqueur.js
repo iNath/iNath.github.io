@@ -1,15 +1,18 @@
-function Marqueur(x, delay, duration, id, scoreManager){
-	Shape.call(this);
+function Marqueur(x, delay, duration, id, context, scoreManager){
 	
 	// Load canvas
-	this._createCanvas(200);
+	this.context = context;
 	this.id = id;
 	this.x = x;
 	this.y = -100;
 	this.delay = delay;
 	this.duration = duration;
 	this.scoreManager = scoreManager;
-	
+    this.listeners = {
+        fail: [],
+        active: []
+    };
+
 	this.delayDown = null;
 	this.delayEnd = null;
 	this.delayLastScoreUpdate = null;
@@ -18,8 +21,6 @@ function Marqueur(x, delay, duration, id, scoreManager){
 	
 	this.state = Marqueur.STATE_INACTIVE;
 }
-Marqueur.prototype = Object.create(Shape.prototype);
-Marqueur.prototype.constructor = Marqueur;
 
 Marqueur.STATE_INACTIVE = 000;
 Marqueur.STATE_ACTIVE = 100;
@@ -27,17 +28,20 @@ Marqueur.STATE_FAIL = 200;
 Marqueur.STATE_SUCCESS = 210;
 Marqueur.STATE_ENDED = 300;
 
-Marqueur.EVENT_DOWN = "DOWN";
-Marqueur.EVENT_UP = "UP";
-Marqueur.EVENT_SUCCESS = "SUCCESS"; // unused
-Marqueur.EVENT_FAIL = "FAIL";
-Marqueur.EVENT_TIMEOUT = "TIMEOUT";
+Marqueur.INTERNAL_EVENT_DOWN = "INTERNAL_EVENT_DOWN";
+Marqueur.INTERNAL_EVENT_UP = "INTERNAL_EVENT_UP";
+Marqueur.INTERNAL_EVENT_SUCCESS = "INTERNAL_EVENT_SUCCESS"; // unused
+Marqueur.INTERNAL_EVENT_FAIL = "EVENT_FAIL";
+Marqueur.INTERNAL_EVENT_TIMEOUT = "INTERNAL_EVENT_TIMEOUT";
+
+Marqueur.EVENT_FAIL = "EVENT_FAIL";
+Marqueur.EVENT_ACTIVE = "EVENT_ACTIVE";
 
 Marqueur.TRANSITIONS = [
 	{
 		from: Marqueur.STATE_INACTIVE,
 		to: Marqueur.STATE_SUCCESS,
-		events: [Marqueur.EVENT_DOWN],
+		events: [Marqueur.INTERNAL_EVENT_DOWN],
 		condition: function(){ 
 			return this.duration == 0; 
 		},
@@ -46,64 +50,67 @@ Marqueur.TRANSITIONS = [
 			this._enterScore();
 		},
 		postAction: function(){ 
-			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
+			window.setTimeout((function(){ this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
 		}
 	},
 	{
 		from: Marqueur.STATE_INACTIVE,
 		to: Marqueur.STATE_ACTIVE,
-		events: [Marqueur.EVENT_DOWN],
+		events: [Marqueur.INTERNAL_EVENT_DOWN],
 		condition: function(){ return this.duration > 0; },
 		action: function(event){ 
 			this.delayDown = event.delayDown;
 			this.delayLastScoreUpdate = event.delayDown;
 			this._enterScore();
 		},	
-		postAction: function(){ 			
-			
+		postAction: function(){
+            this._fire(Marqueur.EVENT_ACTIVE);
 			window.setTimeout((function(){
-				this._trigger(Marqueur.EVENT_TIMEOUT, {delayEnd: this.delayDown + this.duration});
+				this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT, {delayEnd: this.delayDown + this.duration});
 			}).bind(this), this.duration); // post action, devrai être mutualisé
 		}
 	},{
 		from: Marqueur.STATE_INACTIVE,
 		to: Marqueur.STATE_FAIL,
-		events: [Marqueur.EVENT_FAIL],
+		events: [Marqueur.INTERNAL_EVENT_FAIL],
 		condition: null,
 		action: null,
 		postAction: function(){
-			this.scoreManager.fail(); 
+            this._fire(Marqueur.EVENT_FAIL);
+			this.scoreManager.fail();
 			window.setTimeout((function(){ 
-				this._trigger(Marqueur.EVENT_TIMEOUT);
+				this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT);
 			}).bind(this), 500); // le temps d'une eventuelle animation, post action
 		}
 	},{
 		from: Marqueur.STATE_ACTIVE,
 		to: Marqueur.STATE_SUCCESS,
-		events: [Marqueur.EVENT_TIMEOUT],
+		events: [Marqueur.INTERNAL_EVENT_TIMEOUT],
 		condition: null,
 		action: function(event){
 			this.delayEnd = event.delayEnd;
 		},
-		postAction: function(){ 
-			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
+		postAction: function(){
+            this._fire(Marqueur.EVENT_ACTIVE);
+			window.setTimeout((function(){ this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
 		}
 	},{
 		from: Marqueur.STATE_ACTIVE,
 		to: Marqueur.STATE_FAIL,
-		events: [Marqueur.EVENT_UP],
+		events: [Marqueur.INTERNAL_EVENT_UP],
 		condition: null,
 		action: function(event){
 			this.delayEnd = event.delayEnd;
 		},
-		postAction: function(){ 
+		postAction: function(){
+            this._fire(Marqueur.EVENT_FAIL);
 			this.scoreManager.fail();
-			window.setTimeout((function(){ this._trigger(Marqueur.EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
+			window.setTimeout((function(){ this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
 		}
 	},{
 		from: Marqueur.STATE_SUCCESS,
 		to: Marqueur.STATE_ENDED,
-		events: [Marqueur.EVENT_TIMEOUT],
+		events: [Marqueur.INTERNAL_EVENT_TIMEOUT],
 		condition: null,
 		action: null,
 		postAction: function(){
@@ -112,7 +119,7 @@ Marqueur.TRANSITIONS = [
 	},{
 		from: Marqueur.STATE_FAIL,
 		to: Marqueur.STATE_ENDED,
-		events: [Marqueur.EVENT_TIMEOUT],
+		events: [Marqueur.INTERNAL_EVENT_TIMEOUT],
 		condition: null,
 		action: null,
 		postAction: function(){
@@ -140,13 +147,13 @@ Marqueur.prototype._trigger = function(event, data){
 
 // Evenement externes
 Marqueur.prototype.down = function(delayDown){
-	this._trigger(Marqueur.EVENT_DOWN, {delayDown: delayDown});
+	this._trigger(Marqueur.INTERNAL_EVENT_DOWN, {delayDown: delayDown});
 };
 Marqueur.prototype.up = function(delayEnd){
-	this._trigger(Marqueur.EVENT_UP, {delayEnd: delayEnd});
+	this._trigger(Marqueur.INTERNAL_EVENT_UP, {delayEnd: delayEnd});
 };
 Marqueur.prototype.fail = function(){
-	this._trigger(Marqueur.EVENT_FAIL);
+	this._trigger(Marqueur.INTERNAL_EVENT_FAIL);
 };
 
 Marqueur.prototype.refresh = function(delayReference){
@@ -169,8 +176,6 @@ Marqueur.prototype.isEnded = function(){
 };
 
 Marqueur.prototype._draw = function(){
-	
-	this.context.clearRect(0,0,Configuration.width, Configuration.height);
 		
 	if(Marqueur.STATE_ENDED == this.state) return;
 		
@@ -226,5 +231,31 @@ Marqueur.prototype._refreshScore = function(delayReference){
 	
 };
 
+
+Marqueur.prototype.addListener = function(event, handler){
+    if(event == Marqueur.EVENT_FAIL) {
+        this.listeners.fail.push(handler);
+    }
+    if(event == Marqueur.EVENT_ACTIVE) {
+        this.listeners.active.push(handler);
+    }
+};
+
+Marqueur.prototype._fire = function(event){
+    var toFire = null;
+    switch (event){
+        case Marqueur.EVENT_FAIL: toFire = this.listeners.fail; break;
+        case Marqueur.EVENT_ACTIVE: toFire = this.listeners.active; break;
+        default: break;
+    }
+
+    if(toFire == null) return;
+
+    for(var i=0;i<toFire.length;i++){
+        if(typeof(toFire[i]) == 'function'){
+            toFire[i]();
+        }
+    }
+};
 
 

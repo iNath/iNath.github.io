@@ -2,6 +2,11 @@ function MarqueursManager(partition, scoreManager){
 	this.lignes = [];
 	this.partition = partition;
 	this.scoreManager = scoreManager;
+    this.listeners = {
+        fail: [],
+        active: []
+    };
+    this.context = Shape.createCanvas(200);
 	
 	var configuration = Configuration.getAreaPositions().reachable;
 	
@@ -24,6 +29,9 @@ function MarqueursManager(partition, scoreManager){
 		this.lignes.push([]);
 	}
 }
+
+MarqueursManager.EVENT_FAIL = "EVENT_FAIL";
+MarqueursManager.EVENT_ACTIVE = "EVENT_ACTIVE";
 
 MarqueursManager.prototype.start = function(){
 	this.timeStart = Date.now();
@@ -63,6 +71,7 @@ MarqueursManager.prototype.upLine = function(ligne){
 
 MarqueursManager.prototype.refresh = function(){
 	var marqueur = null;
+    this.context.clearRect(0,0,Configuration.width, Configuration.height);
 	for(var i=0;i<this.lignes.length;i++){
 		for(var j=0;j<this.lignes[i].length;j++){
 			marqueur = this.lignes[i][j];
@@ -116,8 +125,14 @@ MarqueursManager.prototype.reload = function(){
 	for(var i=0;i<this.partition.length;i++){
 		for(var j=0;j<this.partition[i].length;j++){
 			if(this.isInLoadedArea(this.partition[i][j].delay)){
-				marqueur = new Marqueur(this.getXPosition(i), this.partition[i][j].delay, this.partition[i][j].duration, i, this.scoreManager);
-				this.lignes[i].push(marqueur);
+				marqueur = new Marqueur(this.getXPosition(i), this.partition[i][j].delay, this.partition[i][j].duration, i, this.context, this.scoreManager);
+                marqueur.addListener(Marqueur.EVENT_FAIL, (function(){
+                    this._fire(MarqueursManager.EVENT_FAIL);
+                }).bind(this));
+                marqueur.addListener(Marqueur.EVENT_ACTIVE, (function(){
+                    this._fire(MarqueursManager.EVENT_ACTIVE);
+                }).bind(this));
+                this.lignes[i].push(marqueur);
 				this.partition[i].splice(j,1);
 				j--;
 			}
@@ -155,3 +170,28 @@ MarqueursManager.prototype.getXPosition = function(i){
 	return Util.getXPositionFromIdAndCount(i, this.lignes.length);
 };
 
+MarqueursManager.prototype.addListener = function(event, handler){
+    if(event == MarqueursManager.EVENT_FAIL) {
+        this.listeners.fail.push(handler);
+    }
+    if(event == MarqueursManager.EVENT_ACTIVE) {
+        this.listeners.active.push(handler);
+    }
+};
+
+MarqueursManager.prototype._fire = function(event){
+    var toFire = null;
+    switch (event){
+        case MarqueursManager.EVENT_FAIL: toFire = this.listeners.fail; break;
+        case MarqueursManager.EVENT_ACTIVE: toFire = this.listeners.active; break;
+        default: break;
+    }
+
+    if(toFire == null) return;
+
+    for(var i=0;i<toFire.length;i++){
+        if(typeof(toFire[i]) == 'function'){
+            toFire[i]();
+        }
+    }
+};

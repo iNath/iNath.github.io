@@ -8,12 +8,12 @@ Game.prototype.start = function(){
 	
 	var background = new Background();
 	background.refresh();
-	
+
 	
 	var marqueursManager = new MarqueursManager(Partition, score);
-	marqueursManager.start();
-	
-	document.getElementById('audio').play();
+    var audioManager = new AudioManager(marqueursManager);
+    marqueursManager.start();
+    audioManager.start();
 	
 	var lignes = [];
 	for(var i=0;i<Partition.length;i++){	

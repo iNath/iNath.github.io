@@ -1,16 +1,13 @@
 function Background(){
-	Shape.call(this);
 	
 	this.state = Background.STATE_INACTIVE;
 	
 	// Initialisations...
 	
 	// Load canvas
-	this._createCanvas(1);
+	this.context = Shape.createCanvas(1);
 	
 }
-Background.prototype = Object.create(Shape.prototype);
-Background.prototype.constructor = Background;
 
 Background.STATE_ACTIVE = 000;
 Background.STATE_INACTIVE = 100;

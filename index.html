@@ -12,6 +12,7 @@
 	<script src="js/Background.js"></script>
 	<script src="js/Marqueur.js"></script>
 	<script src="js/MarqueursManager.js"></script>
+    <script src="js/AudioManager.js"></script>
 	<script src="js/Ligne.js"></script>
 	<script src="js/Game.js"></script>
 	<script>
@@ -25,7 +26,10 @@
 	<div id="score" style="font-size:10em;text-align:center;">0</div>
 	<div id="skill" style="position:absolute;top:10px;left:10px;font-size:5em;"> </div>
 	<div id="combo" style="position:absolute;top:10px;right: 10px;font-size:5em;"> </div>
-	 <audio id="audio">
+	 <audio id="audio-song">
+		  <source src="resource/midi_version/song.ogg" type="audio/mpeg">
+	</audio>
+    <audio id="audio-guitar">
 		  <source src="resource/midi_version/guitar.ogg" type="audio/mpeg">
 	</audio>
 </body>
