@@ -5,7 +5,7 @@ function Background(){
 	// Initialisations...
 	
 	// Load canvas
-	this.context = Shape.createCanvas(1);
+	this.context = Util.createCanvas(1);
 	
 }
 

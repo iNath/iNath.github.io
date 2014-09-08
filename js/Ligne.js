@@ -18,7 +18,7 @@ Ligne.STATE_INACTIVE = 200;
 Ligne.prototype.load = function(x, id){
 	if(this.state != Ligne.STATE_INIT) return false;
 	
-	this.context = Shape.createCanvas(100);
+	this.context = Util.createCanvas(100);
 	this.id = id;
 	this.x = x;
 	this.y = 0;

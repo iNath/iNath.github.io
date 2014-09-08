@@ -157,7 +157,7 @@ Marqueur.prototype.fail = function(){
 };
 
 Marqueur.prototype.refresh = function(delayReference){
-	
+
 	this._refreshScore(delayReference);
 	
 	this._draw();
@@ -175,7 +175,7 @@ Marqueur.prototype.isEnded = function(){
 	return this.state == Marqueur.STATE_ENDED;
 };
 
-Marqueur.prototype._draw = function(){
+Marqueur.prototype._draw = function(timeReference){
 		
 	if(Marqueur.STATE_ENDED == this.state) return;
 		
@@ -208,12 +208,17 @@ Marqueur.prototype._draw = function(){
 	this.context.fillStyle = color;
 	this.context.fillRect(this.x+style.offsetLeft, this.y+style.offsetTop, style.width, style.width);
 
+
+    if(this.delayDown){
+        // TODO : display a shape to show where key were pressed
+    }
+
 };
 
 Marqueur.prototype._enterScore = function(){
-	console.log('delayDown: ' + this.delayDown + ' delay: ' + this.delay);
+	//console.log('delayDown: ' + this.delayDown + ' delay: ' + this.delay);
 	var basicScore = (200/2) - Math.abs(this.delayDown - this.delay);
-	console.log('Score de base: ' + basicScore);
+	//console.log('Score de base: ' + basicScore);
 	this.scoreManager.add(basicScore, false);
 };
 

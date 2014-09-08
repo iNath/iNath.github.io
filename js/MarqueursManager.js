@@ -6,7 +6,7 @@ function MarqueursManager(partition, scoreManager){
         fail: [],
         active: []
     };
-    this.context = Shape.createCanvas(200);
+    this.context = Util.createCanvas(200);
 	
 	var configuration = Configuration.getAreaPositions().reachable;
 	
