@@ -50,7 +50,7 @@ Marqueur.TRANSITIONS = [
 			this._enterScore();
 		},
 		postAction: function(){ 
-			window.setTimeout((function(){ this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
+			window.setTimeout((function(){ this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT);}).bind(this), this.duration); // le temps d'une eventuelle animation, post action
 		}
 	},
 	{
@@ -80,7 +80,7 @@ Marqueur.TRANSITIONS = [
 			this.scoreManager.fail();
 			window.setTimeout((function(){ 
 				this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT);
-			}).bind(this), 500); // le temps d'une eventuelle animation, post action
+			}).bind(this), this.duration + 200); // le temps d'une eventuelle animation, post action
 		}
 	},{
 		from: Marqueur.STATE_ACTIVE,
@@ -160,7 +160,7 @@ Marqueur.prototype.refresh = function(delayReference){
 
 	this._refreshScore(delayReference);
 	
-	this._draw();
+	this._draw(delayReference);
 };
 
 Marqueur.prototype.setY = function(y){
@@ -178,10 +178,13 @@ Marqueur.prototype.isEnded = function(){
 Marqueur.prototype._draw = function(timeReference){
 		
 	if(Marqueur.STATE_ENDED == this.state) return;
+
+    if(Marqueur.STATE_SUCCESS == this.state) return;
 		
 	var style = Configuration.getStyleMarqueurForLigne(this.id);
 
 	var color = style.color;
+    /*
 	switch(this.state){
 		case Marqueur.STATE_ACTIVE:
 			color = '#ffffff';
@@ -192,10 +195,17 @@ Marqueur.prototype._draw = function(timeReference){
 		case Marqueur.STATE_FAIL:
 			color = '#000000';
 			break;
-	}
+	}*/
+
+    var yToDisplay = this.y;
+    var hauteur = this.duration * Configuration.velocity / 1000;
+    if(this.state == Marqueur.STATE_ACTIVE){
+        yToDisplay = Util.getYOrigin();
+        hauteur = (this.duration - (timeReference - this.delayDown) ) * Configuration.velocity / 1000;
+        Log.info(hauteur + ' ' + timeReference + ' ' + this.delayDown);
+    }
 
 	if(this.duration > 0){
-		var hauteur = this.duration * Configuration.velocity / 1000;
 		this.context.fillStyle = color;
 		/*this.context.fillRect(
 			this.x-6,
@@ -204,8 +214,8 @@ Marqueur.prototype._draw = function(timeReference){
 			hauteur
 		);*/
         this.context.beginPath();
-        this.context.moveTo(this.x,  this.y);
-        this.context.lineTo(this.x, this.y - hauteur);
+        this.context.moveTo(this.x,  yToDisplay);
+        this.context.lineTo(this.x, yToDisplay - hauteur);
         this.context.strokeStyle = color;
         this.context.lineWidth = 10;
         this.context.lineCap = "round";
@@ -216,16 +226,16 @@ Marqueur.prototype._draw = function(timeReference){
 		
 	this.context.fillStyle = color;
 	//this.context.fillRect(this.x+style.offsetLeft, this.y+style.offsetTop, style.width, style.height);
-    Util.roundRect(this.context, this.x+style.offsetLeft, this.y+style.offsetTop, style.width, style.height, style.radius, true, false);
+    Util.roundRect(this.context, this.x+style.offsetLeft, yToDisplay+style.offsetTop, style.width, style.height, style.radius, true, false);
 
 
+    /*
     if(this.delayDown){
-        // TODO : display a shape to show where key were pressed
         var yReached = Util.delayToPixel(this.delayDown - this.delay) + Util.getYOrigin();
-        Log.info(yReached + " " + this.delay + " " + this.delayDown + " " + Util.getYOrigin());
         this.context.fillStyle = style.color;
         this.context.fillRect(this.x-20, yReached-1, 40, 3);
     }
+    */
 
 };
 
