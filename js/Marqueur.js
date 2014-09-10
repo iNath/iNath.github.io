@@ -197,20 +197,34 @@ Marqueur.prototype._draw = function(timeReference){
 	if(this.duration > 0){
 		var hauteur = this.duration * Configuration.velocity / 1000;
 		this.context.fillStyle = color;
-		this.context.fillRect(
+		/*this.context.fillRect(
 			this.x-6,
 			this.y+style.offsetTop+style.height - hauteur,
-			12,
+			13,
 			hauteur
-		);
+		);*/
+        this.context.beginPath();
+        this.context.moveTo(this.x,  this.y);
+        this.context.lineTo(this.x, this.y - hauteur);
+        this.context.strokeStyle = color;
+        this.context.lineWidth = 10;
+        this.context.lineCap = "round";
+        this.context.stroke();
+
+        //Util.roundRect(this.context, this.x-4, this.y+style.offsetTop+style.height - hauteur, 9, hauteur, style.radius, true, false);
 	}
 		
 	this.context.fillStyle = color;
-	this.context.fillRect(this.x+style.offsetLeft, this.y+style.offsetTop, style.width, style.width);
+	//this.context.fillRect(this.x+style.offsetLeft, this.y+style.offsetTop, style.width, style.height);
+    Util.roundRect(this.context, this.x+style.offsetLeft, this.y+style.offsetTop, style.width, style.height, style.radius, true, false);
 
 
     if(this.delayDown){
         // TODO : display a shape to show where key were pressed
+        var yReached = Util.delayToPixel(this.delayDown - this.delay) + Util.getYOrigin();
+        Log.info(yReached + " " + this.delay + " " + this.delayDown + " " + Util.getYOrigin());
+        this.context.fillStyle = style.color;
+        this.context.fillRect(this.x-20, yReached-1, 40, 3);
     }
 
 };

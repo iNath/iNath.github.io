@@ -49,11 +49,39 @@ Ligne.prototype.refresh = function(){
 Ligne.prototype._draw = function(){
 	if(this.state == Ligne.STATE_INIT) return false;
 
-	style = Configuration.getStyleLigneForLigne(this.id);
-	
-	this.context.fillStyle = this.state == Ligne.STATE_ACTIVE ? style.color : '#333333';
-	this.context.fillRect(this.x, 0, style.width, Configuration.height);
-	
+    this.context.clearRect(0,0,Configuration.width, Configuration.height);
+
+	var style = Configuration.getStyleLigneForLigne(this.id);
+    var styleMarqueur = Configuration.getStyleMarqueurForLigne(this.id);
+    var widthStrokeMarqueur = 10;
+
+
+    // Dessin de la ligne
+    this.context.fillStyle = '#ffffff';
+    this.context.globalAlpha = this.state == Ligne.STATE_ACTIVE ? 0.2 : 0.1;
+    this.context.fillRect(this.x-1, 0, style.width, Util.getYOrigin() + styleMarqueur.offsetTop - widthStrokeMarqueur / 2);
+
+    // Dessin de la zone d'attache finale des marqueurs
+    this.context.globalAlpha = 0.5;
+    this.context.strokeStyle = '#ffffff';
+    this.context.lineWidth = widthStrokeMarqueur;
+    Util.roundRect(this.context,
+        this.x + styleMarqueur.offsetLeft, Util.getYOrigin() + styleMarqueur.offsetTop,
+        styleMarqueur.width, styleMarqueur.height,
+        styleMarqueur.radius, false, true
+    );
+
+    this.context.globalAlpha = 1;
+    this.context.globalCompositeOperation = "destination-out";
+    Util.roundRect(this.context,
+        this.x + styleMarqueur.offsetLeft, Util.getYOrigin() + styleMarqueur.offsetTop,
+        styleMarqueur.width, styleMarqueur.height,
+        styleMarqueur.radius, true, false
+    );
+    this.context.globalCompositeOperation = "source-over";
+
+
+    this.context.globalAlpha = 1;
 };
 
 

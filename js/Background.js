@@ -31,15 +31,15 @@ Background.prototype.deactivate = function(){
 Background.prototype._draw = function(){
 	
 	this.context.clearRect(0,0,Configuration.width, Configuration.height);
-		
+
 	// TODO: put in configuration file
 	//var style = Configuration.getStyleBackground();
-		
-	this.context.fillStyle = this.state == Background.STATE_ACTIVE ? '#8888ff' : '#55aaff';
+
+	this.context.fillStyle = '#55aaff';
 	this.context.fillRect(0,0, Configuration.width, Configuration.height);
-	
-	this.context.fillStyle = '#aabb33';
-	this.context.fillRect(0, Configuration.getAreaPositions().reachable.y, Configuration.width, Configuration.getAreaPositions().reachable.height);
-	
+
+	//this.context.fillStyle = '#aabb33';
+	//this.context.fillRect(0, Configuration.getAreaPositions().reachable.y, Configuration.width, Configuration.getAreaPositions().reachable.height);
+
 };
 
