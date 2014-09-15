@@ -51,15 +51,23 @@ MarqueursManager.prototype._loop = function(){
 	window.requestAnimationFrame((this._loop).bind(this));
 };
 
-MarqueursManager.prototype.downLine = function(ligne){
-	console.log('down ligne ' + ligne);
-	for(var i=0;i<this.lignes[ligne].length;i++){
-		if(this.isInReachableArea(this.lignes[ligne][i].getDelay())){
-			console.log('Down at ---> timeReference: ' +this.timeReference);
-			this.lignes[ligne][i].down(this.timeReference);
-			break;
-		}
-	}
+MarqueursManager.prototype.downLines = function(lignes){
+	console.log('down ligne ' + lignes.join());
+    var nbReached = 0;
+
+    for(var i=0;i<lignes.length;i++){
+        for(var j=0;j<this.lignes[lignes[i]].length;j++){
+            if(this.isInReachableArea(this.lignes[lignes[i]][j].getDelay())){
+                //console.log('Down at ---> timeReference: ' +this.timeReference);
+                nbReached++;
+                this.lignes[lignes[i]][j].down(this.timeReference);
+                break;
+            }
+        }
+    }
+
+    // Si on a tappé ds le vide, c'est du fail pour tous
+    if(nbReached == 0) this.failAll();
 };
 
 MarqueursManager.prototype.upLine = function(ligne){
@@ -67,6 +75,16 @@ MarqueursManager.prototype.upLine = function(ligne){
 	for(var i=0;i<this.lignes[ligne].length;i++){
 		this.lignes[ligne][i].up(this.timeReference);
 	}
+};
+
+MarqueursManager.prototype.failAll = function(){
+    for(var i=0;i<this.lignes.length;i++){
+        for(var j=0;j<this.lignes[i].length;j++){
+            if(this.lignes[i][j].isActive()){
+                this.lignes[i][j].up();
+            }
+        }
+    }
 };
 
 MarqueursManager.prototype.refresh = function(){

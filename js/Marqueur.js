@@ -175,11 +175,17 @@ Marqueur.prototype.isEnded = function(){
 	return this.state == Marqueur.STATE_ENDED;
 };
 
+Marqueur.prototype.isActive = function(){
+    return this.state == Marqueur.STATE_ACTIVE;
+};
+
 Marqueur.prototype._draw = function(timeReference){
 		
 	if(Marqueur.STATE_ENDED == this.state) return;
 
     if(Marqueur.STATE_SUCCESS == this.state) return;
+
+    if(Marqueur.STATE_FAIL == this.state && this.delayDown) return;
 		
 	var style = Configuration.getStyleMarqueurForLigne(this.id);
 

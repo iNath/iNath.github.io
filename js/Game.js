@@ -28,18 +28,20 @@ Game.prototype.start = function(){
 			background.activate();
 			background.refresh();
 			// Check marqueurs from activated lines
+            var linesToNotify = [];
 			if(keyboard.keyIsActive(Keyboard.NUM_1)){
-				marqueursManager.downLine(0);
+				linesToNotify.push(0);
 			}
 			if(keyboard.keyIsActive(Keyboard.NUM_2)){
-				marqueursManager.downLine(1);				
+                linesToNotify.push(1);
 			}
             if(keyboard.keyIsActive(Keyboard.NUM_3)){
-                marqueursManager.downLine(2);
+                linesToNotify.push(2);
             }
             if(keyboard.keyIsActive(Keyboard.NUM_4)){
-                marqueursManager.downLine(3);
+                linesToNotify.push(3);
             }
+            marqueursManager.downLines(linesToNotify);
 		} else { 
 			background.deactivate();
 			background.refresh();
