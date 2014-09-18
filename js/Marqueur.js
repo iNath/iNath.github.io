@@ -58,7 +58,7 @@ Marqueur.TRANSITIONS = [
 		to: Marqueur.STATE_ACTIVE,
 		events: [Marqueur.INTERNAL_EVENT_DOWN],
 		condition: function(){ return this.duration > 0; },
-		action: function(event){ 
+		action: function(event){
 			this.delayDown = event.delayDown;
 			this.delayLastScoreUpdate = event.delayDown;
 			this._enterScore();
@@ -85,26 +85,13 @@ Marqueur.TRANSITIONS = [
 	},{
 		from: Marqueur.STATE_ACTIVE,
 		to: Marqueur.STATE_SUCCESS,
-		events: [Marqueur.INTERNAL_EVENT_TIMEOUT],
+		events: [Marqueur.INTERNAL_EVENT_TIMEOUT, Marqueur.INTERNAL_EVENT_UP],
 		condition: null,
 		action: function(event){
 			this.delayEnd = event.delayEnd;
 		},
 		postAction: function(){
-            this._fire(Marqueur.EVENT_ACTIVE);
-			window.setTimeout((function(){ this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
-		}
-	},{
-		from: Marqueur.STATE_ACTIVE,
-		to: Marqueur.STATE_FAIL,
-		events: [Marqueur.INTERNAL_EVENT_UP],
-		condition: null,
-		action: function(event){
-			this.delayEnd = event.delayEnd;
-		},
-		postAction: function(){
-            this._fire(Marqueur.EVENT_FAIL);
-			this.scoreManager.fail();
+            //this._fire(Marqueur.EVENT_ACTIVE); // TODO: vérifier l'utilité
 			window.setTimeout((function(){ this._trigger(Marqueur.INTERNAL_EVENT_TIMEOUT);}).bind(this), 500); // le temps d'une eventuelle animation, post action
 		}
 	},{

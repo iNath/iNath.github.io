@@ -33,7 +33,7 @@ var logObject = function(obj){
 // ---------
 // Some init
 
-var file = toArrayBuffer(fs.readFileSync('../resource/midi_version/notes.mid'));
+var file = toArrayBuffer(fs.readFileSync('../resource/midi_version/rh/notes.mid'));
 var midi = new MIDIFile(file);
 
 
@@ -51,7 +51,8 @@ var eventsCount = events.length;
 var levels = {
     low: [],
     medium: [],
-    high: []
+    high: [],
+    legendary: []
 };
 
 for(var i=0;i<eventsCount;i++){
@@ -60,20 +61,22 @@ for(var i=0;i<eventsCount;i++){
 
     if(event.subtype != SUBTYPE_NOTE_OFF && event.subtype != SUBTYPE_NOTE_ON) continue;
 
-    if(72 <= noteNumber && noteNumber < 82){
+    if(60 <= noteNumber && noteNumber < 72){
         levels.low.push(event);
     } else if(82 <= noteNumber && noteNumber < 96){
         levels.medium.push(event);
     } else if(96 <= noteNumber && noteNumber < 108) {
         levels.high.push(event);
-    } else {
-        throw Error("noteNumber out of range");
+    } else { // TODO: fix it for 4 levels
+        //throw Error("noteNumber out of range : " + noteNumber);
     }
 }
 
-//logObject(levels.low);
+for(var i=0;i<20;i++){
+    logObject(levels.low[i]);
+}
 
-var noteNumberOffset = 72;
+var noteNumberOffset = 60;
 var output = [[],[],[],[],[],[],[],[],[],[],[],[]];
 var input = levels.low;
 var buffer = [];
@@ -103,6 +106,16 @@ for(var i=0;i<input.length;i++){
             delay: Math.round(onSaved.playTime),
             duration: Math.round(input[i].playTime - onSaved.playTime)
         });
+    }
+}
+
+// Suppression des doublons, à voir pourquoi ils sont présents parfois
+for(var i=0;i<output.length;i++){
+    for(var j=0;j<output[i].length-1;j++){
+        if(output[i][j].delay == output[i][j+1].delay
+        && output[i][j].duration == output[i][j+1].duration){
+            output[i].splice(j+1, 1);
+        }
     }
 }
 

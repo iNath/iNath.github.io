@@ -17,7 +17,7 @@ function MarqueursManager(partition, scoreManager){
 								- this.delayInvalid
 								- this.durationValidity
 								;
-	this.delayPreload = 500; // Temps de préchargement avant zone visible
+	this.delayPreload = 100; // Temps de préchargement avant zone visible
 	
 	this.velocity = Configuration.velocity; // px/sec
 	
@@ -52,22 +52,26 @@ MarqueursManager.prototype._loop = function(){
 };
 
 MarqueursManager.prototype.downLines = function(lignes){
-	console.log('down ligne ' + lignes.join());
-    var nbReached = 0;
+    var nbTotalReached = 0;
 
     for(var i=0;i<lignes.length;i++){
+        var nbReachedPerLine = 0;
         for(var j=0;j<this.lignes[lignes[i]].length;j++){
             if(this.isInReachableArea(this.lignes[lignes[i]][j].getDelay())){
                 //console.log('Down at ---> timeReference: ' +this.timeReference);
-                nbReached++;
+                nbTotalReached++;
+                nbReachedPerLine++;
                 this.lignes[lignes[i]][j].down(this.timeReference);
                 break;
             }
         }
+
+        // Si une ligne a été tapée pour rien, on fail pour tous
+        if(nbReachedPerLine == 0) this.failAll();
     }
 
-    // Si on a tappé ds le vide, c'est du fail pour tous
-    if(nbReached == 0) this.failAll();
+    // Si on a tapé ds le vide, c'est du fail pour tous
+    if(nbTotalReached == 0) this.failAll();
 };
 
 MarqueursManager.prototype.upLine = function(ligne){
@@ -81,10 +85,12 @@ MarqueursManager.prototype.failAll = function(){
     for(var i=0;i<this.lignes.length;i++){
         for(var j=0;j<this.lignes[i].length;j++){
             if(this.lignes[i][j].isActive()){
-                this.lignes[i][j].up();
+                this.lignes[i][j].fail();
             }
         }
     }
+    this._fire(MarqueursManager.EVENT_FAIL);
+    // TODO: fail combo
 };
 
 MarqueursManager.prototype.refresh = function(){
@@ -107,7 +113,7 @@ MarqueursManager.prototype.refresh = function(){
 			
 			if(this.isInFailArea(marqueur.getDelay())){
 				// Le marqueur est passé
-				marqueur.fail();
+                marqueur.fail();
 			} else if(this.isInVisibleArea(marqueur.getDelay())){
 				// Le marqueur est visible, on l'avance
 				// marqueur.setY(this.getYPosition(marqueur.getDelay()));
