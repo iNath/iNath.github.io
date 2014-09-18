@@ -66,8 +66,14 @@ MarqueursManager.prototype.downLines = function(lignes){
             }
         }
 
-        // Si une ligne a été tapée pour rien, on fail pour tous
-        if(nbReachedPerLine == 0) this.failAll();
+        // Si une ligne a été tapée pour rien
+        if(nbReachedPerLine == 0) {
+            // si il n'y a aucun marqueur actif dessus
+            if(!this.lineHasActif(i)){
+                // alors on fail tout
+                this.failAll();
+            }
+        }
     }
 
     // Si on a tapé ds le vide, c'est du fail pour tous
@@ -193,6 +199,16 @@ MarqueursManager.prototype.getYPosition = function(delay){
 MarqueursManager.prototype.getXPosition = function(i){
 	return Util.getXPositionFromIdAndCount(i, this.lignes.length);
 };
+
+MarqueursManager.prototype.lineHasActif = function(i){
+    for(var j=0;j<this.lignes[i].length;j++){
+        if(this.lignes[i][j].isActive()){
+            return true;
+        }
+    }
+    return false;
+};
+
 
 MarqueursManager.prototype.addListener = function(event, handler){
     if(event == MarqueursManager.EVENT_FAIL) {
