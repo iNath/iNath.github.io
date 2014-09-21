@@ -65,10 +65,10 @@ function Keyboard(){
 }
 
 Keyboard._ENTER = 13;
-Keyboard._NUM_1 = 49;
-Keyboard._NUM_2 = 50;
-Keyboard._NUM_3 = 51;
-Keyboard._NUM_4 = 52;
+Keyboard._NUM_1 = 49;//112
+Keyboard._NUM_2 = 50;//113
+Keyboard._NUM_3 = 51;//114
+Keyboard._NUM_4 = 52;//115
 
 Keyboard.VALIDATE = "VALIDATE";
 Keyboard.NUM_1 = "NUM"+Keyboard._NUM_1;
