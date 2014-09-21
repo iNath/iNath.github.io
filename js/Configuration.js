@@ -30,6 +30,9 @@ Configuration = {
 			}
 		};
 	},
+    isModeEnter : function(){
+        return true;
+    },
     getLog: function(){
         return {
             info: document.getElementById('log')

@@ -24,6 +24,8 @@ Game.prototype.start = function(){
 		
 	var keyboard = new Keyboard();
 	var validateHandler = function(){
+        if(!Configuration.isModeEnter()) return;
+
 		if(keyboard.keyIsActive(Keyboard.VALIDATE)){
 			background.activate();
 			background.refresh();
@@ -50,7 +52,12 @@ Game.prototype.start = function(){
 	var ligneChangeHandler = function(i, isActive){
 					
 		if(isActive){
-			lignes[i].activate();
+            if(!lignes[i].isActive() || Configuration.isModeEnter()) {
+                lignes[i].activate();
+                if(!Configuration.isModeEnter()) {
+                    marqueursManager.downLines([i]);
+                }
+            }
 		} else {
 			marqueursManager.upLine(i);
 			lignes[i].deactivate();

@@ -40,6 +40,10 @@ Ligne.prototype.deactivate = function(){
 	this.state = Ligne.STATE_INACTIVE;
 };
 
+Ligne.prototype.isActive = function() {
+    return this.state == Ligne.STATE_ACTIVE;
+};
+
 Ligne.prototype.refresh = function(){
 	if(this.state == Ligne.STATE_INIT) return false;
 	

@@ -53,6 +53,8 @@ MarqueursManager.prototype._loop = function(){
 
 MarqueursManager.prototype.downLines = function(lignes){
     var nbTotalReached = 0;
+    var marqueurToDown = [];
+    var fail = false;
 
     for(var i=0;i<lignes.length;i++){
         var nbReachedPerLine = 0;
@@ -61,7 +63,8 @@ MarqueursManager.prototype.downLines = function(lignes){
                 //console.log('Down at ---> timeReference: ' +this.timeReference);
                 nbTotalReached++;
                 nbReachedPerLine++;
-                this.lignes[lignes[i]][j].down(this.timeReference);
+                //this.lignes[lignes[i]][j].down(this.timeReference);
+                marqueurToDown.push(this.lignes[lignes[i]][j]);
                 break;
             }
         }
@@ -71,13 +74,23 @@ MarqueursManager.prototype.downLines = function(lignes){
             // si il n'y a aucun marqueur actif dessus
             if(!this.lineHasActif(i)){
                 // alors on fail tout
-                this.failAll();
+                fail = true;
             }
         }
     }
 
     // Si on a tapé ds le vide, c'est du fail pour tous
-    if(nbTotalReached == 0) this.failAll();
+    if(nbTotalReached == 0) {
+        fail = true;
+    }
+
+    if(!fail){
+        for(var i=0;i<marqueurToDown.length;i++) {
+            marqueurToDown[i].down(this.timeReference);
+        }
+    } else {
+        this.failAll();
+    }
 };
 
 MarqueursManager.prototype.upLine = function(ligne){
