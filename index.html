@@ -18,7 +18,7 @@
 	<script>
 		window.onload = function(){ 
             document.getElementById('start-button').getElementsByTagName('button')[0].addEventListener('click', function(evt){
-                evt.target.parentNode.parentNode.removeChild( evt.target);
+                evt.target.parentNode.parentNode.removeChild( evt.target.parentNode);
                 new Game().start();
 			});
 		};
