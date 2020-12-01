@@ -69,10 +69,10 @@ MarqueursManager.prototype.downLines = function(lignes){
             }
         }
 
-        // Si une ligne a été tapée pour rien
+		// Si une ligne a été tapée pour rien
         if(nbReachedPerLine == 0) {
-            // si il n'y a aucun marqueur actif dessus
-            if(!this.lineHasActif(i)){
+            // et si il n'y a aucun marqueur actif dessus
+            if(!this.lineHasActif(lignes[i])){
                 // alors on fail tout
                 fail = true;
             }
@@ -94,7 +94,6 @@ MarqueursManager.prototype.downLines = function(lignes){
 };
 
 MarqueursManager.prototype.upLine = function(ligne){
-	console.log('up ligne ' + ligne);
 	for(var i=0;i<this.lignes[ligne].length;i++){
 		this.lignes[ligne][i].up(this.timeReference);
 	}
