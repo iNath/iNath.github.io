@@ -17,18 +17,18 @@
 	<script src="js/Ligne.js"></script>
 	<script src="js/Game.js"></script>
 	<script>
-		window.onload = function(){
-		    document.getElementById('start-button').addEventListener('click', function(evt){
+		window.onload = function(){ 
+            document.getElementById('start-button').addEventListener('click', function(evt){
                 evt.target.parentNode.removeChild( evt.target);
-				new Game().start();
+                new Game().start();
 			});
 		};
 	</script>
 </head>
 <body style="background:#55aaff">
     <div id="start-button">
-	<button>Start!</button>
-    <div>
+	    <button>Start!</button>
+    </div>
     <div id="log" style="position:absolute;top:5px;right:5px;z-index:1000;background:#fff;"></div>
 	<div id="game" style="position:relative;height:400px;width:300px;margin:10px auto;border:5px solid #fff;"> </div>
     <div style="position:absolute;top:10px;left:0px;font-family:Verdana;">
