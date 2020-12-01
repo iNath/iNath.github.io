@@ -17,8 +17,8 @@
 	<script src="js/Game.js"></script>
 	<script>
 		window.onload = function(){ 
-            document.getElementById('start-button').addEventListener('click', function(evt){
-                evt.target.parentNode.removeChild( evt.target);
+            document.getElementById('start-button').getElementsByTagName('button')[0].addEventListener('click', function(evt){
+                evt.target.parentNode.parentNode.removeChild( evt.target);
                 new Game().start();
 			});
 		};
